@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+         <record id="view_op_lote_form" model="ir.ui.view">
+                <field name="name">mrp_order_production.op_lote.form</field>
+                <field name="model">mrp_order_production.op_lote</field>
+                <field name="arch" type="xml">
+                    <form string="Lote">
+                        <header>
+                            <!-- <button name="confirm_lot" string="Confirmar" class="oe_highlight" type="object" states="borrador" />
+                            <button name="create_lot" string="Crear Lotes" class="oe_highlight" type="object" states="borrador" /> -->
+                            <field name="state" widget="statusbar" statusbar_visible="boraddor,confirmado" />
+                        </header>
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <field name="name"/>
+                                </h1>
+                            </div>
+                            <group>
+                                <group>
+                                    <field name="date">
+                                        <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
+                                    </field>
+                                    <field name="date_mrp_production">
+                                      <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
+                                    </field>
+                                    <field name="reference">
+                                      <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
+                                    </field>
+                                </group>
+
+                                  <field name="product_ids">
+                                      <list string="Productos" editable="bottom">
+                                          <field name="lot_state" invisible="1"/>
+                                          <field name="product_id">
+                                            <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
+                                          </field>
+                                          <field name="quantity">
+                                            <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
+                                          </field>
+                                      </list>
+                                  </field>
+
+                            </group>
+
+                        </sheet>
+                        <!-- <div class="oe_chatter">
+                            <field name="message_follower_ids"/>
+                            <field name="activity_ids"/>
+                            <field name="message_ids"/>
+                        </div> -->
+                    </form>
+
+                </field>
+            </record>
+
+         <record id="view_op_lote_list" model="ir.ui.view">
+                <field name="name">mrp_order_production.op_lote.list</field>
+                <field name="model">mrp_order_productionop_lote</field>
+                <field name="type">tree</field>
+                <field name="arch" type="xml">
+                    <list string="OP Lote">
+                        <field name="name"/>
+                        <field name="date"/>
+                        <field name="date_mrp_production"/>
+                        <field name="reference"/>
+                    </list>
+                </field>
+            </record>
+
+        <record id="op_lote_view_search" model="ir.ui.view">
+                <field name="name">mrp_order_production.op_lote.search</field>
+                <field name="model">mrp_order_production.op_lote</field>
+                <field name="arch" type="xml">
+                    <search string="Lotes">
+                        <field name="name"/>
+                        <field name="date"/>
+                        <field name="date_mrp_production"/>
+                    </search>
+                </field>
+            </record>
+
+        <record id="action_produccion_lote" model="ir.actions.act_window">
+                <field name="name">Orden de producción por lote</field>
+                <field name="res_model">mrp_order_production.op_lote</field>
+                <field name="view_mode">list,form</field>
+                <field name="domain"></field>
+                <field name="context"></field>
+                <field name="search_view_id" ref="op_lote_view_search"/>
+                <field name="help" type="html">
+                  <p class="oe_view_nocontent_create">
+                   Click para crear un lote
+                  </p>
+                </field>
+            </record>
+
+        <menuitem
+                id="menu_produccion_lote"
+                name="Orden de producción por lote"
+                action="action_produccion_lote"
+                parent="mrp.menu_mrp_manufacturing"
+                sequence="250"/>
+
+    </data>
+</odoo>

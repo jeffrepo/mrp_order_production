@@ -8,8 +8,8 @@
                 <field name="arch" type="xml">
                     <form string="Lote">
                         <header>
-                            <!-- <button name="confirm_lot" string="Confirmar" class="oe_highlight" type="object" states="borrador" />
-                            <button name="create_lot" string="Crear Lotes" class="oe_highlight" type="object" states="borrador" /> -->
+                            <button name="confirm_lot" string="Confirmar" class="oe_highlight" type="object" invisible="state != 'borrador'" />
+                            <!-- <button name="create_lot" string="Crear Lotes" class="oe_highlight" type="object" states="borrador" /> -->
                             <field name="state" widget="statusbar" statusbar_visible="boraddor,confirmado" />
                         </header>
                         <sheet>
@@ -33,7 +33,7 @@
 
                                   <field name="product_ids">
                                       <list string="Productos" editable="bottom">
-                                          <field name="lot_state" invisible="1"/>
+                                          <field name="lot_state" invisible="True"/>
                                           <field name="product_id">
                                             <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
                                           </field>
@@ -58,8 +58,8 @@
 
          <record id="view_op_lote_list" model="ir.ui.view">
                 <field name="name">mrp_order_production.op_lote.list</field>
-                <field name="model">mrp_order_productionop_lote</field>
-                <field name="type">tree</field>
+                <field name="model">mrp_order_production.op_lote</field>
+                <field name="type">list</field>
                 <field name="arch" type="xml">
                     <list string="OP Lote">
                         <field name="name"/>

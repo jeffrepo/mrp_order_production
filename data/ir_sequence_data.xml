@@ -4,7 +4,7 @@
 
         <record id="seq_orden_produccion" model="ir.sequence">
             <field name="name">Orden produccion</field>
-            <field name="code">mrp_order_production.op</field>
+            <field name="code">mrp_order_production.op_lote</field>
             <field name="prefix">OP/</field>
             <field name="padding">6</field>
             <field name="company_id" eval="False"/>

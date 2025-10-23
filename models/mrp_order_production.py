@@ -17,6 +17,7 @@ class OrderLote(models.Model):
     state = fields.Selection(
         [('borrador', 'Borrador'), ('confirmado', 'Confirmado')],
         'Estado', readonly=True, copy=False, default='borrador', tracking=True)
+    order_ids = fields.One2many('mrp.production','lot_id', string="Ordenes")
 
     @api.model
     def create(self, vals):
@@ -26,7 +27,7 @@ class OrderLote(models.Model):
                 vals['name'] = self.env['ir.sequence'].with_context(force_company=vals['company_id']).next_by_code(
                     'mrp_order_production_lot.op_lote', sequence_date=seq_date) or _('New')
             else:
-                vals['name'] = self.env['ir.sequence'].next_by_code('mrp_order_production_lot.op_lote', sequence_date=seq_date) or _('New')
+                vals['name'] = self.env['ir.sequence'].next_by_code('mrp_order_production.op_lote', sequence_date=seq_date) or _('New')
 
         result = super(OrderLote, self).create(vals)
         return result
@@ -43,13 +44,21 @@ class OrderLote(models.Model):
                         'product_uom_id': line.product_id.uom_id.id,
                         'qty_producing': line.quantity,
                         'product_qty': line.quantity,
-                        'bom_id': line.product_id.bom_ids.id,
+                        'bom_id': line.product_id.bom_ids[0].id,
                         'origin': line.lot_id.name,
-                        'date_planned_start': date_planed_start,
+                        'date_start': date_planed_start,
                     }
                     mrp_order_id = self.env['mrp.production'].create(mrp_order)
 
-                    mrp_order_id._onchange_move_raw()
-                    mrp_order_id._onchange_move_finished()
+                    mrp_order_id._compute_move_raw_ids()
+                    mrp_order_id.set_qty_producing()
+                    mrp_order_id._compute_move_finished_ids()
+                    mrp_order_id.button_mark_done()
+                    mrp_order_id.write({'lot_id': lot.id})
             lot.write({'state': "confirmado"})
         return True
+
+class MrpProduction(models.Model):
+    _inherit = 'mrp.production'
+
+    lot_id = fields.Many2one('mrp_order_production.op_lote','Lote')

@@ -37,9 +37,14 @@
                                           <field name="product_id">
                                             <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
                                           </field>
+                                          
                                           <field name="quantity">
                                             <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
                                           </field>
+                                          <field name="price_unit">
+                                            <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
+                                          </field>
+                                          <field name="comment"/>
                                       </list>
                                   </field>
 

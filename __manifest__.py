@@ -20,7 +20,8 @@
         'data/ir_sequence_data.xml',
         #'security/ir.model.access.csv',
         'views/mpr_order_production_lot.xml',
-        #'report/report.xml',
+        'views/reporte_production_view.xml',
+        'views/reports.xml',
     ],
     'license': 'LGPL-3',
 }

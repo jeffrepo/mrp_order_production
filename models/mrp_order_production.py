@@ -15,7 +15,7 @@ class OrderLote(models.Model):
     product_ids = fields.One2many('mrp_order_production.op_lote_line', 'lot_id', string="Productos", tracking=True)
     reference = fields.Char('Referencia', tracking=True)
     state = fields.Selection(
-        [('borrador', 'Borrador'), ('confirmado', 'Confirmado')],
+        [('borrador', 'Borrador'), ('proceso','Proceso'),('confirmado', 'Confirmado')],
         'Estado', readonly=True, copy=False, default='borrador', tracking=True)
     order_ids = fields.One2many('mrp.production','lot_id', string="Ordenes")
 
@@ -32,8 +32,7 @@ class OrderLote(models.Model):
         result = super(OrderLote, self).create(vals)
         return result
 
-
-    def confirm_lot(self):
+    def process_lot(self):
         for lot in self:
             if lot.product_ids:
                 for line in lot.product_ids:
@@ -53,8 +52,15 @@ class OrderLote(models.Model):
                     mrp_order_id._compute_move_raw_ids()
                     mrp_order_id.set_qty_producing()
                     mrp_order_id._compute_move_finished_ids()
-                    mrp_order_id.button_mark_done()
+                    
                     mrp_order_id.write({'lot_id': lot.id})
+            lot.write({'state': "proceso"})
+            
+    def confirm_lot(self):
+        for lot in self:
+            if lot.order_ids:
+                for mrp_order in lot.order_ids:
+                    mrp_order.button_mark_done()
             lot.write({'state': "confirmado"})
         return True
 

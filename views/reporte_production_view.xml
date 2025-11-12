@@ -6,6 +6,7 @@
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <t t-call="web.internal_layout">
+                        <t t-set="producto_agrupado" t-value="{}"/>
                         <t t-set="o" t-value="o.with_context(lang=lang)"/>
                         <div class="page">
                             <div class="oe_structure"/>
@@ -108,22 +109,97 @@
                                 </table>
                                 
                             </t>
-                            <br/>
-                            <br/>
-                            <div>
-                                <span>
-                                    Recibido por:
-                                </span>
-                            </div>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <br/>
-                            <div>
-                                <span>
-                                    Etiquetado por:
-                                </span>
-                            </div>
+
+<!-- ====================== -->
+<!-- COMPONENTES AGRUPADOS + PRODUCTOS SIN BOM + CATEGORÍA -->
+<!-- ====================== -->
+<h3>
+    <span>Componentes agrupados</span>
+</h3>
+
+<t t-set="componentes_agrupados" t-value="dict()"/>
+
+<!-- 1️⃣ Recorremos todas las órdenes de producción -->
+<t t-foreach="o.order_ids" t-as="op">
+    <t t-foreach="op.move_raw_ids" t-as="raw_line">
+
+        <t t-set="product_name" t-value="raw_line.product_id.display_name"/>
+        <t t-set="uom_name" t-value="raw_line.product_uom.name"/>
+        <t t-set="categoria" t-value="raw_line.product_id.categ_id.display_name or ''"/>
+
+        <t t-set="actual"
+           t-value="componentes_agrupados.get(product_name, {'qty': 0.0, 'uom': uom_name, 'is_product': False, 'categoria': categoria})"/>
+        <t t-set="nuevo_valor"
+           t-value="dict(qty=actual['qty'] + raw_line.product_uom_qty, uom=uom_name, is_product=False, categoria=categoria)"/>
+        <t t-set="componentes_agrupados"
+           t-value="dict(list(componentes_agrupados.items()) + [(product_name, nuevo_valor)])"/>
+
+    </t>
+</t>
+
+<!-- 2️⃣ Agregamos los productos terminados que NO tengan BOM -->
+<t t-foreach="o.product_ids" t-as="linea">
+    <t t-if="not any(order.product_id.id == linea.product_id.id for order in o.order_ids)">
+        <t t-set="product_name" t-value="linea.product_id.display_name"/>
+        <t t-set="uom_name" t-value="linea.product_id.uom_id.name"/>
+        <t t-set="categoria" t-value="linea.product_id.categ_id.display_name or ''"/>
+        <t t-set="cantidad" t-value="linea.quantity"/>
+
+        <t t-set="actual"
+           t-value="componentes_agrupados.get(product_name, {'qty': 0.0, 'uom': uom_name, 'is_product': True, 'categoria': categoria})"/>
+        <t t-set="nuevo_valor"
+           t-value="dict(qty=actual['qty'] + cantidad, uom=uom_name, is_product=True, categoria=categoria)"/>
+        <t t-set="componentes_agrupados"
+           t-value="dict(list(componentes_agrupados.items()) + [(product_name, nuevo_valor)])"/>
+    </t>
+</t>
+
+<!-- 3️⃣ Mostramos tabla -->
+<table class="table table-sm mt16">
+    <thead>
+        <tr>
+            <th style="width:35%">Producto / Componente</th>
+            <th style="width:20%">Categoría</th>
+            <th class="text-end" style="width:15%">Cantidad total</th>
+            <th style="width:15%">Unidad</th>
+            <th style="width:15%">Tipo</th>
+        </tr>
+    </thead>
+    <tbody>
+        <t t-foreach="sorted(componentes_agrupados.items())" t-as="item">
+            <tr>
+                <td><span t-esc="item[0]"/></td>
+                <td><span t-esc="item[1]['categoria']"/></td>
+                <td class="text-end">
+                    <span t-esc="'%.2f' % (item[1]['qty'] or 0.0)"/>
+                </td>
+                <td><span t-esc="item[1]['uom']"/></td>
+                <td>
+                    <t t-if="item[1]['is_product']">
+                        <span>Producto</span>
+                    </t>
+                    <t t-else="">
+                        <span>Componente</span>
+                    </t>
+                </td>
+            </tr>
+        </t>
+    </tbody>
+</table>
+
+<!-- 4️⃣ Firmas -->
+<div class="mt32" style="border-top: 1px solid #ccc; padding-top: 16px;">
+    <div class="row">
+        <div class="col-6 text-center">
+            <span><strong>Recibido por:</strong> ________________________</span>
+        </div>
+        <div class="col-6 text-center">
+            <span><strong>Etiquetado por:</strong> ________________________</span>
+        </div>
+    </div>
+</div>
+
+
 
 
                     

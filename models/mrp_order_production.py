@@ -5,6 +5,11 @@ from odoo.exceptions import UserError, ValidationError
 import logging
 import pytz
 
+class StockPicking(models.Model):
+    _inherit = "stock.picking"
+
+    lot_id = fields.Many2one('mrp_order_production.op_lote','Lote')
+    
 class OrderLote(models.Model):
     _name = "mrp_order_production.op_lote"
     # _inherit = ['mail.thread', 'mail.activity.mixin', 'utm.mixin']
@@ -18,7 +23,8 @@ class OrderLote(models.Model):
         [('borrador', 'Borrador'), ('proceso','Proceso'),('confirmado', 'Confirmado')],
         'Estado', readonly=True, copy=False, default='borrador', tracking=True)
     order_ids = fields.One2many('mrp.production','lot_id', string="Ordenes")
-
+    picking_ids = fields.One2many('stock.picking','lot_id', string="Traslados")
+    
     @api.model
     def create(self, vals):
         if vals.get('name', _('New')) == _('New'):
@@ -37,23 +43,42 @@ class OrderLote(models.Model):
             if lot.product_ids:
                 for line in lot.product_ids:
                     date_planed_start = datetime.fromisoformat(lot.date_mrp_production.isoformat() + ' 06:00:00')
-                    mrp_order = {
-                        # 'name': line.lot_id.name,
-                        'product_id': line.product_id.id,
-                        'product_uom_id': line.product_id.uom_id.id,
-                        'qty_producing': line.quantity,
-                        'product_qty': line.quantity,
-                        'bom_id': line.product_id.bom_ids[0].id,
+                    if line.product_id.bom_ids:
+                        mrp_order = {
+                            # 'name': line.lot_id.name,
+                            'product_id': line.product_id.id,
+                            'product_uom_id': line.product_id.uom_id.id,
+                            'qty_producing': line.quantity,
+                            'product_qty': line.quantity,
+                            'bom_id': line.product_id.bom_ids[0].id,
+                            'origin': line.lot_id.name,
+                            'date_start': date_planed_start,
+                        }
+                        mrp_order_id = self.env['mrp.production'].create(mrp_order)
+    
+                        mrp_order_id._compute_move_raw_ids()
+                        mrp_order_id.set_qty_producing()
+                        mrp_order_id._compute_move_finished_ids()
+                        
+                        mrp_order_id.write({'lot_id': lot.id})
+                    else:
+                        picking_id = self.env['stock.picking'].create({
+                        'picking_type_id': 26,
+                        'location_id': 8,
                         'origin': line.lot_id.name,
-                        'date_start': date_planed_start,
-                    }
-                    mrp_order_id = self.env['mrp.production'].create(mrp_order)
+                        'location_dest_id': 24, })
 
-                    mrp_order_id._compute_move_raw_ids()
-                    mrp_order_id.set_qty_producing()
-                    mrp_order_id._compute_move_finished_ids()
-                    
-                    mrp_order_id.write({'lot_id': lot.id})
+                        lineas_transferencia_id = self.env['stock.move.line'].create({
+                        'picking_id': picking_id.id,
+                        'product_id': line.product_id.id,
+                        'qty_done': line.quantity,
+                        #'product_uom_qty': line.quantity,
+                        #'product_uom_id': lista_id[lneas]['product_uom_id'],
+                        'location_id': 8,
+                        'location_dest_id': 24,
+                        'qty_done': line.quantity,
+                        })
+                        picking_id.write({'lot_id': lot.id})
             lot.write({'state': "proceso"})
             
     def confirm_lot(self):
@@ -61,6 +86,9 @@ class OrderLote(models.Model):
             if lot.order_ids:
                 for mrp_order in lot.order_ids:
                     mrp_order.button_mark_done()
+            if lot.picking_ids:
+                for line in picking_ids:
+                    line.button_validate()
             lot.write({'state': "confirmado"})
         return True
 

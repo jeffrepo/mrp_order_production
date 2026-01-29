@@ -24,6 +24,7 @@ class OrderLote(models.Model):
         'Estado', readonly=True, copy=False, default='borrador', tracking=True)
     order_ids = fields.One2many('mrp.production','lot_id', string="Ordenes")
     picking_ids = fields.One2many('stock.picking','lot_id', string="Traslados")
+    user_responsible_id = fields.Many2one('res.users',string='Responsable de corte')
     
     @api.model
     def create(self, vals):
@@ -37,7 +38,20 @@ class OrderLote(models.Model):
 
         result = super(OrderLote, self).create(vals)
         return result
+        
+    def set_draft(self):
+        for lot in self:
+            lot.write({'state': borrador})
+            if lot.order_ids:
+                for order in lot.order_ids:
+                    order.action_cancel()
+                    order.lot_id = False
 
+            if lot.picking_ids:
+                for picking in lot.picking_ids:
+                    picking.action_cancel()
+                    picking.lot_id = False
+                    
     def process_lot(self):
         for lot in self:
             if lot.product_ids:

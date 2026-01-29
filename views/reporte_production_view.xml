@@ -34,6 +34,14 @@
                                 <strong>Referencia:</strong><br/>
                                 <span t-field="o.reference"></span>
                             </div>
+
+                            
+                        </div>
+                        <div class="row mt32 mb32">
+                            <div class="col-3" t-if="o.reference">
+                                <strong>Responsable de corte:</strong><br/>
+                                <span t-field="o.user_responsible_id"></span>
+                            </div>
                         </div>
 
                         <h3>
@@ -125,7 +133,7 @@
 
         <t t-set="product_name" t-value="raw_line.product_id.display_name"/>
         <t t-set="uom_name" t-value="raw_line.product_uom.name"/>
-        <t t-set="categoria" t-value="raw_line.product_id.categ_id.display_name or ''"/>
+        <t t-set="categoria" t-value="raw_line.product_id.categ_id.name or ''"/>
 
         <t t-set="actual"
            t-value="componentes_agrupados.get(product_name, {'qty': 0.0, 'uom': uom_name, 'is_product': False, 'categoria': categoria})"/>
@@ -142,7 +150,7 @@
     <t t-if="not any(order.product_id.id == linea.product_id.id for order in o.order_ids)">
         <t t-set="product_name" t-value="linea.product_id.display_name"/>
         <t t-set="uom_name" t-value="linea.product_id.uom_id.name"/>
-        <t t-set="categoria" t-value="linea.product_id.categ_id.display_name or ''"/>
+        <t t-set="categoria" t-value="linea.product_id.categ_id.name or ''"/>
         <t t-set="cantidad" t-value="linea.quantity"/>
 
         <t t-set="actual"
@@ -162,7 +170,7 @@
             <th style="width:20%">Categoría</th>
             <th class="text-end" style="width:15%">Cantidad total</th>
             <th style="width:15%">Unidad</th>
-            <th style="width:15%">Tipo</th>
+            <!-- <th style="width:15%">Tipo</th> -->
         </tr>
     </thead>
     <tbody>
@@ -174,21 +182,25 @@
                     <span t-esc="'%.2f' % (item[1]['qty'] or 0.0)"/>
                 </td>
                 <td><span t-esc="item[1]['uom']"/></td>
-                <td>
+                <!-- <td>
                     <t t-if="item[1]['is_product']">
                         <span>Producto</span>
                     </t>
                     <t t-else="">
                         <span>Componente</span>
                     </t>
-                </td>
+                </td> -->
             </tr>
         </t>
     </tbody>
 </table>
 
+                        
+
 <!-- 4️⃣ Firmas -->
 <div class="mt32" style="border-top: 1px solid #ccc; padding-top: 16px;">
+    <br/>
+    <br/>
     <div class="row">
         <div class="col-6 text-center">
             <span><strong>Recibido por:</strong> ________________________</span>

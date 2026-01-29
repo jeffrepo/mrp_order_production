@@ -10,6 +10,8 @@
                         <header>
                             <button name="process_lot" string="Proceso" class="oe_highlight" type="object" invisible="state != 'borrador'" />
                             <button name="confirm_lot" string="Confirmar" class="oe_highlight" type="object" invisible="state != 'proceso'" />
+                            <button name="set_draft" string="Pasar a borrador" class="oe_highlight" type="object" invisible="state != 'proceso'" />
+                            
                             <!-- <button name="create_lot" string="Crear Lotes" class="oe_highlight" type="object" states="borrador" /> -->
                             <field name="state" widget="statusbar" statusbar_visible="boraddor,proceso,confirmado" />
                         </header>
@@ -28,6 +30,9 @@
                                       <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
                                     </field>
                                     <field name="reference">
+                                      <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
+                                    </field>
+                                    <field name="user_responsible_id">
                                       <modifiers>{'readonly': [('state','=','confirmado')]}</modifiers>
                                     </field>
                                 </group>
